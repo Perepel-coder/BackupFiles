@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using NLog;
 
 namespace BackupFiles.CreatingSettingsFile
 {
@@ -35,6 +36,20 @@ namespace BackupFiles.CreatingSettingsFile
                 this.SourceFolders = settingFile.SourceFolders;
                 this.TargetFolder = settingFile.TargetFolder;
                 this.LoggingLevel = settingFile.LoggingLevel;
+            }
+        }
+
+        public LogLevel GetLoggingLevel()
+        {
+            LoggingLevel = LoggingLevel.ToLower();
+            switch (LoggingLevel)
+            {
+                case "debug": return LogLevel.Debug;
+                case "info": return LogLevel.Info;
+                case "error": return LogLevel.Error;
+                default: 
+                    Console.WriteLine("Уровень логирования не определен! Стандартный уровень логирования - Error");
+                    return LogLevel.Error;
             }
         }
     }

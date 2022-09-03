@@ -1,20 +1,24 @@
-﻿
+﻿using NLog;
+using NLog.Config;
+
 namespace BackupFiles.CopyFile
 {
     internal static class ClassCopyFile
     {
+        private static Logger LOG = LogManager.GetCurrentClassLogger();
+
         public static void CopyDirectory(string sourceFolder, string targetFolder)
-        {
-            sourceFolder = PullOutLink(sourceFolder);
-            if (Directory.Exists(sourceFolder))
+        {      
+            try
             {
-                string timeNow = DateTime.Now.ToString().Replace(":", "_");
+                sourceFolder = PullOutLink(sourceFolder);
                 Directory.CreateDirectory($"{targetFolder}\\{Path.GetFileName(sourceFolder)}_copy");
 
                 foreach (string file in Directory.GetFiles(sourceFolder))
                 {
-                    string newFile = $"{targetFolder}\\{Path.GetFileName(sourceFolder)}_copy\\{Path.GetFileName(file)}";
-                    File.Copy(file, newFile);
+                    string target = $"{targetFolder}\\{Path.GetFileName(sourceFolder)}_copy\\{Path.GetFileName(file)}";
+                    File.Copy(file, target);
+                    LOG.Debug($"Скопирован файл {file} в папку {target}");
                 }
                 foreach (string folder in Directory.GetDirectories(sourceFolder))
                 {
@@ -22,37 +26,43 @@ namespace BackupFiles.CopyFile
                     CopyDirectory(myFolder, $"{targetFolder}\\{Path.GetFileName(sourceFolder)}_copy");
                 }
             }
-            else
+            catch (Exception ex)
             {
-                Console.WriteLine("Файл не существует. Копирование прервано");
+                LOG.Error($"Исключение{ex.Message} | Метод: {ex.TargetSite} | Трассировка стека: {ex.StackTrace}");
+                Console.WriteLine("Ошибка выполнения. Копирование прервано");
                 Environment.Exit(0);
             }
         }
         public static void CopyDirectories(string[] sourceFolders, string targetFolder)
         {
             string timeNow = DateTime.Now.ToString().Replace(":", "_");
+            LOG.Debug($"Определено текущее время");
             targetFolder = $"{targetFolder}\\Backup_{timeNow}";
             foreach (var sourceFolder in sourceFolders)
             {
-                string actualSourceFolder = PullOutLink(sourceFolder);
-                if (Directory.Exists(actualSourceFolder))
+                try 
                 {
+                    string actualSourceFolder = PullOutLink(sourceFolder);
                     Directory.CreateDirectory($"{targetFolder}\\{Path.GetFileName(actualSourceFolder)}_copy");
 
                     foreach (string file in Directory.GetFiles(actualSourceFolder))
                     {
-                        File.Copy(file, $"{targetFolder}\\{Path.GetFileName(actualSourceFolder)}_copy\\{Path.GetFileName(file)}");
+                        string target = $"{targetFolder}\\{Path.GetFileName(actualSourceFolder)}_copy\\{Path.GetFileName(file)}";
+                        File.Copy(file, target);
+                        LOG.Debug($"Скопирован файл {file} в папку {target}");
                     }
                     foreach (string folder in Directory.GetDirectories(actualSourceFolder))
                     {
                         string myFolder = PullOutLink(folder);
                         CopyDirectory(myFolder, $"{targetFolder}\\{Path.GetFileName(actualSourceFolder)}_copy");
                     }
+                    LOG.Info($"Обработана папка {sourceFolders}");
                 }
-                else
+                catch (Exception ex)
                 {
-                    Console.WriteLine("Папка не существует. Копирование прервано");
-                    return;
+                    LOG.Error($"Исключение{ex.Message} | Метод: {ex.TargetSite} | Трассировка стека: {ex.StackTrace}");
+                    Console.WriteLine("Ошибка выполнения. Копирование прервано");
+                    Environment.Exit(0);
                 }
             }
             
@@ -60,11 +70,26 @@ namespace BackupFiles.CopyFile
 
         public static string PullOutLink(string sourceFolder)
         {
-            if (sourceFolder.IndexOf(".lnk") >= 0)
+            try
             {
-                IWshRuntimeLibrary.WshShell shell = new IWshRuntimeLibrary.WshShell();
-                return (((IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(sourceFolder)).TargetPath);
+                if (sourceFolder.IndexOf(".lnk") >= 0)
+                {
+                    IWshRuntimeLibrary.WshShell shell = new IWshRuntimeLibrary.WshShell();
+                    LOG.Debug($"Определен путь файла: {sourceFolder}");
+                    return (((IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(sourceFolder)).TargetPath);
+                }
+                else
+                {
+                    LOG.Debug($"Определен путь файла: {sourceFolder}");
+                }
             }
+            catch (Exception ex)
+            {
+                LOG.Error($"Исключение{ex.Message} | Метод: {ex.TargetSite} | Трассировка стека: {ex.StackTrace}");
+                Console.WriteLine("Ошибка выполнения. Копирование прервано");
+                Environment.Exit(0);
+            }
+            LOG.Info($"Проверка пути к файлу");
             return sourceFolder;
         }
     }
