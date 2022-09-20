@@ -1,5 +1,4 @@
 ﻿using NLog;
-using NLog.Config;
 
 namespace BackupFiles.CopyFile
 {
@@ -28,8 +27,8 @@ namespace BackupFiles.CopyFile
             }
             catch (Exception ex)
             {
-                LOG.Error($"Исключение{ex.Message} | Метод: {ex.TargetSite} | Трассировка стека: {ex.StackTrace}");
-                Console.WriteLine("Ошибка выполнения. Копирование прервано");
+                LOG.Error($"Исключение {ex.Message} | Метод: {ex.TargetSite} | Трассировка стека: {ex.StackTrace}");
+                Console.WriteLine($"Ошибка выполнения. Копирование прервано. Исключение {ex.Message}");
                 Environment.Exit(0);
             }
         }
@@ -37,11 +36,13 @@ namespace BackupFiles.CopyFile
         {
             string timeNow = DateTime.Now.ToString().Replace(":", "_");
             LOG.Debug($"Определено текущее время");
+            var oldTargetFolder = targetFolder;
             targetFolder = $"{targetFolder}\\Backup_{timeNow}";
             foreach (var sourceFolder in sourceFolders)
             {
                 try 
                 {
+                    if (sourceFolder == oldTargetFolder) { throw new Exception("Имена исходной и конечной папок совпадают"); }
                     string actualSourceFolder = PullOutLink(sourceFolder);
                     Directory.CreateDirectory($"{targetFolder}\\{Path.GetFileName(actualSourceFolder)}_copy");
 
@@ -56,12 +57,12 @@ namespace BackupFiles.CopyFile
                         string myFolder = PullOutLink(folder);
                         CopyDirectory(myFolder, $"{targetFolder}\\{Path.GetFileName(actualSourceFolder)}_copy");
                     }
-                    LOG.Info($"Обработана папка {sourceFolders}");
+                    LOG.Info($"Обработана папка {sourceFolder}");
                 }
                 catch (Exception ex)
                 {
                     LOG.Error($"Исключение{ex.Message} | Метод: {ex.TargetSite} | Трассировка стека: {ex.StackTrace}");
-                    Console.WriteLine("Ошибка выполнения. Копирование прервано");
+                    Console.WriteLine($"Ошибка выполнения. Копирование прервано. Исключение {ex.Message}");
                     Environment.Exit(0);
                 }
             }
@@ -86,7 +87,7 @@ namespace BackupFiles.CopyFile
             catch (Exception ex)
             {
                 LOG.Error($"Исключение{ex.Message} | Метод: {ex.TargetSite} | Трассировка стека: {ex.StackTrace}");
-                Console.WriteLine("Ошибка выполнения. Копирование прервано");
+                Console.WriteLine($"Ошибка выполнения. Копирование прервано. Исключение{ex.Message}");
                 Environment.Exit(0);
             }
             LOG.Info($"Проверка пути к файлу");

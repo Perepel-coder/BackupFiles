@@ -5,43 +5,87 @@ using NLog.Config;
 
 LogManager.Configuration = new XmlLoggingConfiguration(@"NLog.config");
 
-#region
 //-----------------Создание_файла_настроек-----------------
+while (true)
 {
-    //string? str;
-    //string targetFolder = "error";
-    //string loggingLevel = "error";
-    //string fileName = "error";
+    Console.WriteLine("Создать файл настроек? YES | NO | EXIT");
+    string? flag = Console.ReadLine();
+    flag = flag.ToLower();
+    switch (flag)
+    {
+        case "yes":
+            string? str;
+            string targetFolder = "error";
+            string loggingLevel = "error";
+            string fileName = "error";
 
-    //Console.WriteLine("Количество исходных папок: ");
-    //int sizeSourceFolders = Convert.ToInt32(Console.ReadLine());
-    //string[] sourceFolders = new string[sizeSourceFolders];
+            Console.WriteLine("Количество исходных папок: ");
+            int sizeSourceFolders = Convert.ToInt32(Console.ReadLine());
+            string[] sourceFolders = new string[sizeSourceFolders];
 
-    //Console.WriteLine("Массив путей исходных папок: ");
-    //for (int i = 0; i < sizeSourceFolders; i++)
-    //{
-    //    str = Console.ReadLine();
-    //    if (str != null) { sourceFolders[i] = str; }
-    //}
+            Console.WriteLine("Массив путей исходных папок: ");
+            for (int i = 0; i < sizeSourceFolders; i++)
+            {
+                str = Console.ReadLine();
+                if (str != null) { sourceFolders[i] = str; }
+            }
 
-    //Console.WriteLine("Путь к целевой папке");
-    //str = Console.ReadLine();
-    //if (str != null) { targetFolder = str; }
+            Console.WriteLine("Путь к целевой папке");
+            str = Console.ReadLine();
+            if (str != null) { targetFolder = str; }
 
-    //Console.WriteLine("Уровень логирования");
-    //str = Console.ReadLine();
-    //if (str != null) { loggingLevel = str; }
+            Console.WriteLine("Уровень логирования (debug, info, error)");
+            str = Console.ReadLine();
+            if (str != null) { loggingLevel = str; }
 
-    //Console.WriteLine("Путь файла настроек");
-    //str = Console.ReadLine();
-    //if (str != null) { fileName = str; }
+            Console.WriteLine("Путь файла настроек");
+            str = Console.ReadLine();
+            if (str != null) { fileName = str; }
 
-    //ClassSettingFile settingFile = new(sourceFolders, targetFolder, loggingLevel);
-    //settingFile.CreatFileJson(fileName);
+            ClassSettingFile settingFile = new(sourceFolders, targetFolder, loggingLevel);
+            settingFile.CreatFileJson(fileName);
+
+            bool way = true;
+            while (way)
+            {
+                Console.WriteLine("Перейти к копированию? YES | NO | EXIT");
+                flag = Console.ReadLine();
+                flag = flag.ToLower();
+
+                switch (flag)
+                {
+                    case "yes": await CopyFiles(); break;
+                    case "no": way = false; break;
+                    case "exit": return;
+                    default: break;
+                }
+            }
+            break;
+        case "no":
+            way = true;
+            while (way)
+            {
+                Console.WriteLine("Перейти к копированию? YES | NO | EXIT");
+                flag = Console.ReadLine();
+                flag = flag.ToLower();
+
+                switch (flag)
+                {
+                    case "yes": await CopyFiles(); break;
+                    case "no": way = false; break;
+                    case "exit": return;
+                    default: break;
+                }
+            }
+            break;
+        case "exit": return;
+        default: continue;
+    }
 }
-#endregion
-//---------------------------------------------------------
-{
+
+//--------------------------копирование------------------------
+async Task<bool> CopyFiles(){
+    Console.WriteLine("Блок копирования файлов");
     string? str;
     ClassSettingFile settingFile;
     string fileName = "error";
@@ -80,4 +124,5 @@ LogManager.Configuration = new XmlLoggingConfiguration(@"NLog.config");
     LOG.Info($"Окончание копированя");
 
     LOG.Info($"Завершение программы");
+    return true;
 }

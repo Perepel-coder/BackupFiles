@@ -12,9 +12,13 @@ namespace BackupFiles.CreatingSettingsFile
         public ClassSettingFile() { }
         public ClassSettingFile(string[] sourceFolders, string targetFolder, string loggingLevel) 
         {
+            for(int i = 0; i < sourceFolders.Length; i++)
+            {
+                sourceFolders[i] = sourceFolders[i].Replace("\"", "");
+            }
             this.SourceFolders = sourceFolders;
-            this.TargetFolder = targetFolder;
-            this.LoggingLevel = loggingLevel;
+            this.TargetFolder = targetFolder.Replace("\"", "");
+            this.LoggingLevel = loggingLevel.Replace("\"", "");
         }
         public async void CreatFileJson(string fileName)
         {
